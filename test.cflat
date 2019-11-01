@@ -9,6 +9,5 @@ int f(){
     struct Point p;
     a = 1;
     b = a + 1;
-    c = a - 1;
     p.x = 1;
 }

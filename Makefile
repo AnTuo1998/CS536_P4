@@ -55,7 +55,7 @@ EmptySymTableException.class: EmptySymTableException.java
 
 ##test
 test:
-	java -cp $(CP) P4 nameErrors.cflat nameErrors.out
+	# java -cp $(CP) P4 nameErrors.cflat nameErrors.out
 	java -cp $(CP) P4 test.cflat test.out
 
 ###

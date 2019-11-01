@@ -1,5 +1,6 @@
 import java.io.*;
 import java.util.*;
+import java.util.stream.Collectors;
 
 // **********************************************************************
 // The ASTnode class defines the nodes of the abstract-syntax tree that
@@ -194,8 +195,22 @@ class FormalsListNode extends ASTnode {
     }
 
     public void nameAnalysis(SymTable st) {
-
+        Iterator it = myFormals.iterator();
+        try {
+            while (it.hasNext()) {
+                ((FormalDeclNode) it.next()).nameAnalysis(st);
+            }
+        } catch (NoSuchElementException ex) {
+            System.err.println("unexpected NoSuchElementException in FormalsListNode.print");
+            System.exit(-1);
+        }
     }
+    
+    List<String> getFormalTypeList() {
+        return myFormals.stream().map(n -> n.getType())
+                        .collect(Collectors.toList());
+    }
+
     // list of kids (FormalDeclNodes)
     private List<FormalDeclNode> myFormals;
 }
@@ -212,7 +227,8 @@ class FnBodyNode extends ASTnode {
     }
 
     public void nameAnalysis(SymTable st) {
-
+        myDeclList.nameAnalysis(st);
+        myStmtList.nameAnalysis(st);
     }
 
     // 2 kids
@@ -233,7 +249,15 @@ class StmtListNode extends ASTnode {
     }
 
     public void nameAnalysis(SymTable st) {
-
+        Iterator it = myStmts.iterator();
+        try {
+            while (it.hasNext()) {
+                ((StmtNode) it.next()).nameAnalysis(st);
+            }
+        } catch (NoSuchElementException ex) {
+            System.err.println("unexpected NoSuchElementException in DeclListNode.print");
+            System.exit(-1);
+        }
     }
 
     // list of kids (StmtNodes)
@@ -287,16 +311,17 @@ class VarDeclNode extends DeclNode {
     }
 
     public void nameAnalysis(SymTable st){
-        MySym mySym = new MySym(myType.getType());
+        MySym mySym = new MySym(myType.getType(), Kind.VAR);
 
         try {
+            System.out.print("add new var ");
+            System.out.println(myId.getMyStrVal());
             st.addDecl(myId.getMyStrVal(), mySym);
             myId.link(mySym);
         } catch(EmptySymTableException e) {
             ErrMsg.fatal(myId.getLineNum(), 
                          myId.getCharNum(), 
                          "SymTable empty");
-
         } catch(DuplicateSymException e) {
             ErrMsg.fatal(myId.getLineNum(), 
                          myId.getCharNum(), 
@@ -342,7 +367,40 @@ class FnDeclNode extends DeclNode {
     }
 
     public void nameAnalysis(SymTable st) {
+        MyFuncSym mySym = new MyFuncSym(myType.getType(), Kind.FUNC);
 
+        try {
+            System.out.print("add new func ");
+            System.out.println(myId.getMyStrVal());
+            st.addDecl(myId.getMyStrVal(), mySym);
+            myId.link(mySym);
+        } catch(EmptySymTableException e) {
+            ErrMsg.fatal(myId.getLineNum(), 
+                         myId.getCharNum(), 
+                         "SymTable empty");
+        } catch(DuplicateSymException e) {
+            ErrMsg.fatal(myId.getLineNum(), 
+                         myId.getCharNum(), 
+                         "Multiply declared identifier");
+        } catch(WrongArgumentException e){
+            ErrMsg.fatal(myId.getLineNum(), 
+                         myId.getCharNum(), 
+                         e.getMessage());
+        }
+
+        st.addScope();
+        myFormalsList.nameAnalysis(st);
+        mySym.setFormalTypeList(myFormalsList.getFormalTypeList());
+        myBody.nameAnalysis(st);
+        st.print();
+        try {
+            st.removeScope();
+        } catch(EmptySymTableException e) {
+            ErrMsg.fatal(myId.getLineNum(), 
+                         myId.getCharNum(), 
+                         "SymTable empty");
+        }
+        st.print();
     }
 
     // 4 kids
@@ -365,7 +423,30 @@ class FormalDeclNode extends DeclNode {
     }
 
     public void nameAnalysis(SymTable st) {
+        MySym mySym = new MySym(myType.getType(), Kind.VAR);
 
+        try {
+            System.out.print("add new var ");
+            System.out.println(myId.getMyStrVal());
+            st.addDecl(myId.getMyStrVal(), mySym);
+            myId.link(mySym);
+        } catch(EmptySymTableException e) {
+            ErrMsg.fatal(myId.getLineNum(), 
+                         myId.getCharNum(), 
+                         "SymTable empty");
+        } catch(DuplicateSymException e) {
+            ErrMsg.fatal(myId.getLineNum(), 
+                         myId.getCharNum(), 
+                         "Multiply declared identifier");
+        } catch(WrongArgumentException e){
+            ErrMsg.fatal(myId.getLineNum(), 
+                         myId.getCharNum(), 
+                         e.getMessage());
+        }
+    }
+
+    String getType() {
+        return myType.getType();
     }
 
     // 2 kids
@@ -377,26 +458,44 @@ class StructDeclNode extends DeclNode {
     public StructDeclNode(IdNode id, DeclListNode declList) {
         myId = id;
         myDeclList = declList;
+        mySymTable = new SymTable();
     }
 
     public void unparse(PrintWriter p, int indent, boolean isDecl) {
         addIndent(p, indent);
         p.print("struct ");
         myId.unparse(p, 0, isDecl);
-        p.println("{");
+        p.println(" {");
         myDeclList.unparse(p, indent+4, isDecl);
         addIndent(p, indent);
-        p.println("};\n");
+        p.println("};");
 
     }
 
     public void nameAnalysis(SymTable st) {
+        MySym mySym = new MySym("struct", Kind.STRUCT);
+        try {
+            System.out.print("add new var ");
+            System.out.println(myId.getMyStrVal());
+            st.addDecl(myId.getMyStrVal(), mySym);
+            myId.link(mySym);
+        } catch (EmptySymTableException e) {
+            ErrMsg.fatal(myId.getLineNum(), myId.getCharNum(), "SymTable empty");
+        } catch (DuplicateSymException e) {
+            ErrMsg.fatal(myId.getLineNum(), myId.getCharNum(), "Multiply declared identifier");
+        } catch (WrongArgumentException e) {
+            ErrMsg.fatal(myId.getLineNum(), myId.getCharNum(), e.getMessage());
+        }
 
+        myDeclList.nameAnalysis(mySymTable);
+        st.print();
+        mySymTable.print();
     }
 
     // 2 kids
     private IdNode myId;
     private DeclListNode myDeclList;
+    private SymTable mySymTable;
 }
 
 // **********************************************************************
@@ -837,7 +936,7 @@ class IdNode extends ExpNode {
         myCharNum = charNum;
         myStrVal = strVal;
     }
-    
+
     public void unparse(PrintWriter p, int indent, boolean isDecl) {
         p.print(myStrVal);
         if (!isDecl) {
@@ -974,9 +1073,9 @@ abstract class BinaryExpNode extends ExpNode {
     
     public void unparse(PrintWriter p, int indent, boolean isDecl) {
         p.print("(");
-        myExp1.unparse(p, 0, isDecl);
+        myExp1.unparse(p, 0, true);
         p.print(" " + binaryOp + " ");
-        myExp2.unparse(p, 0, isDecl);
+        myExp2.unparse(p, 0, true);
         p.print(")");
     }
 }

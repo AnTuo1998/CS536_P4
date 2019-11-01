@@ -1,8 +1,17 @@
 int a;
+int b;
+bool c;
+struct Point{
+    int x;
+    int y;
+};
+
 int f() {
     int a;
     int b;
+    struct Point p;
     a = 1;
     b = (a + 1);
+    p.x = 1;
 }
 
