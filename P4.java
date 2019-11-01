@@ -56,7 +56,7 @@ public class P4 {
 
         ((ASTnode) root.value).nameAnalysis(null);
         
-        ((ASTnode)root.value).unparse(outFile, 0);
+        ((ASTnode) root.value).unparse(outFile, 0, true);
         outFile.close();
 
         return;
