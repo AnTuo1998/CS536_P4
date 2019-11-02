@@ -1136,7 +1136,7 @@ abstract class UnaryExpNode extends ExpNode {
     }
 
     public void nameAnalysis(SymTable st) {
-
+        myExp.nameAnalysis(st);
     }
 
     // one child
@@ -1183,10 +1183,6 @@ class UnaryMinusNode extends UnaryExpNode {
         myExp.unparse(p, 0, isDecl);
         p.print(")");
     }
-
-    public void nameAnalysis(SymTable st) {
-        myExp.nameAnalysis(st);
-    }
 }
 
 class NotNode extends UnaryExpNode {
@@ -1198,10 +1194,6 @@ class NotNode extends UnaryExpNode {
         p.print("(!");
         myExp.unparse(p, 0, isDecl);
         p.print(")");
-    }
-
-    public void nameAnalysis(SymTable st) {
-        myExp.nameAnalysis(st);
     }
 }
 
