@@ -3,7 +3,7 @@ struct Point {
     int x;
     int y;
 };
-int f(){
+int compute(){
     int a;
     int b;
     int c;
@@ -12,8 +12,12 @@ int f(){
     bool y;
     bool z;
     struct Point p;
+    p.x = 1;
     a = 1;
     b = 2 + 3;
+    b = -1;
+    b=-a;
+    b=-(-a);
     b = a;
     c = a + 1;
     c = 1 + a;
@@ -27,8 +31,82 @@ int f(){
     z=(true||false)&&(!true);
     z=x&&true;z=x&&false;z=false&&z;z=x&&y;
     z=x||true;z=x||false;z=false||z;z=x||y;
+    z=!x;z=!true;z=!!!y;
     a++;b--;
     // p.x = 1;
     cin>>a;
     cout<<b;
+    return a;
+}
+
+void compare(int a, int b, int c){
+    bool z;
+    z=a>1;z=1>a;z=a>b;
+    z=a<1;z=1<a;z=a<b;
+    z=a>=1;z=1>=a;z=a>=b;
+    z=a<=1;z=1<=a;z=a<=b;
+    z=a==1;z=1==a;z=a==b;
+    z=a!=1;z=1!=a;z=a!=b;
+}
+
+bool test_if(int d, int e) {
+    int a;
+    int b;
+    int c;
+    bool z;
+    a = 1;
+    b = 2;
+    if (a < b) {
+        cin >> a;
+    }
+    c = a + b;
+    if (c >= d){
+        int g;
+        a++;
+    }else{
+        if (c>=e){
+            b++;
+        }
+        g--;
+    }
+    return d<=e;
+}
+
+int test_loop() {
+    int a;
+    int b;
+    int c;
+    int sum1;
+    int sum2;
+    int sum3;
+    a = 0;
+    while(a<=100){
+        sum1 = sum1 + a;
+    }
+    cout<<sum1;
+    b=100;
+    sum2 = 0;
+    repeat(b>=0){
+        sum2 = sum2 + b;
+        b--;
+    }
+    cout << (sum1==sum2);
+    a = 0;
+    while(a<=100){
+        if (a/2 > 10){
+            sum3 = sum3 + a;
+        }
+    }
+    return sum3;
+}
+
+int main(){
+    int a;
+    int b;
+    int c;
+    bool z;
+    a = compute(a,b,c);
+    compare(a, b, c);
+    z=test_if(a,b);
+    c = test_loop();
 }

@@ -3,7 +3,7 @@ struct Point {
     int x;
     int y;
 };
-int f() {
+int compute() {
     int a;
     int b;
     int c;
@@ -12,8 +12,12 @@ int f() {
     bool y;
     bool z;
     struct Point p;
+    p(Point).x(bool) = 1;
     a(int) = 1;
     b(int) = (2 + 3);
+    b(int) = (-1);
+    b(int) = (-a(int));
+    b(int) = (-(-a(int)));
     b(int) = a(int);
     c(int) = (a(int) + 1);
     c(int) = (1 + a(int));
@@ -38,9 +42,98 @@ int f() {
     z(bool) = (x(bool) || false);
     z(bool) = (false || z(bool));
     z(bool) = (x(bool) || y(bool));
+    z(bool) = (!x(bool));
+    z(bool) = (!true);
+    z(bool) = (!(!(!y(bool))));
     a(int)++;
     b(int)--;
     cin >> a(int);
     cout << b(int);
+    return a(int);
+}
+
+void compare(int a, int b, int c) {
+    bool z;
+    z(bool) = (a(int) > 1);
+    z(bool) = (1 > a(int));
+    z(bool) = (a(int) > b(int));
+    z(bool) = (a(int) < 1);
+    z(bool) = (1 < a(int));
+    z(bool) = (a(int) < b(int));
+    z(bool) = (a(int) >= 1);
+    z(bool) = (1 >= a(int));
+    z(bool) = (a(int) >= b(int));
+    z(bool) = (a(int) <= 1);
+    z(bool) = (1 <= a(int));
+    z(bool) = (a(int) <= b(int));
+    z(bool) = (a(int) == 1);
+    z(bool) = (1 == a(int));
+    z(bool) = (a(int) == b(int));
+    z(bool) = (a(int) != 1);
+    z(bool) = (1 != a(int));
+    z(bool) = (a(int) != b(int));
+}
+
+bool test_if(int d, int e) {
+    int a;
+    int b;
+    int c;
+    bool z;
+    a(int) = 1;
+    b(int) = 2;
+    if ((a(int) < b(int))) {
+        cin >> a(int);
+    }
+    c(int) = (a(int) + b(int));
+    if ((c(int) >= d(int))) {
+        int g(int);
+        a(int)++;
+    }
+    else {
+        if ((c(int) >= e(int))) {
+            b(int)++;
+        }
+        g(int)--;
+    }
+    return (d(int) <= e(int));
+}
+
+int test_loop() {
+    int a;
+    int b;
+    int c;
+    int sum1;
+    int sum2;
+    int sum3;
+    a(int) = 0;
+    while ((a(int) <= 100)) {
+        sum1(int) = (sum1(int) + a(int));
+    }
+    cout << sum1(int);
+    b(int) = 100;
+    sum2(int) = 0;
+    repeat ((b(int) >= 0)) {
+        sum2(int) = (sum2(int) + b(int));
+        b(int)--;
+    }
+    cout << (sum1(int) == sum2(int));
+    a(int) = 0;
+    while ((a(int) <= 100)) {
+        if (((a(int) / 2) > 10)) {
+            sum3(int) = (sum3(int) + a(int));
+        }
+    }
+    return sum3(int);
+}
+
+int main() {
+    int a;
+    int b;
+    int c;
+    bool z;
+    a(int) = compute([]->int)(a(int), b(int), c(int));
+    compare([int, int, int]->void)(a(int), b(int), c(int));
+    z(bool) = test_if([int, int]->bool)(a(int), b(int));
+    c(int) = test_loop([]->int)();
 }
 

@@ -1,4 +1,5 @@
 import java.io.*;
+import java.io.ObjectInputStream.GetField;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -714,7 +715,9 @@ class IfStmtNode extends StmtNode {
     }
 
     public void nameAnalysis(SymTable st) {
-
+        myExp.nameAnalysis(st);
+        myDeclList.nameAnalysis(st);
+        myStmtList.nameAnalysis(st);
     }
 
     // e kids
@@ -752,7 +755,11 @@ class IfElseStmtNode extends StmtNode {
     }
 
     public void nameAnalysis(SymTable st) {
-
+        myExp.nameAnalysis(st);
+        myThenDeclList.nameAnalysis(st);
+        myThenStmtList.nameAnalysis(st);
+        myElseDeclList.nameAnalysis(st);
+        myElseStmtList.nameAnalysis(st);
     }
 
     // 5 kids
@@ -782,7 +789,9 @@ class WhileStmtNode extends StmtNode {
     }
 
     public void nameAnalysis(SymTable st) {
-
+        myExp.nameAnalysis(st);
+        myDeclList.nameAnalysis(st);
+        myStmtList.nameAnalysis(st);
     }
 
     // 3 kids
@@ -810,7 +819,9 @@ class RepeatStmtNode extends StmtNode {
     }
 
     public void nameAnalysis(SymTable st) {
-
+        myExp.nameAnalysis(st);
+        myDeclList.nameAnalysis(st);
+        myStmtList.nameAnalysis(st);
     }
     // 3 kids
     private ExpNode myExp;
@@ -830,7 +841,7 @@ class CallStmtNode extends StmtNode {
     }
 
     public void nameAnalysis(SymTable st) {
-
+        myCall.nameAnalysis(st);
     }
 
     // 1 kid
@@ -853,7 +864,7 @@ class ReturnStmtNode extends StmtNode {
     }
 
     public void nameAnalysis(SymTable st) {
-
+        myExp.nameAnalysis(st);
     }
 
     // 1 kid
@@ -958,7 +969,6 @@ class IdNode extends ExpNode {
                 System.out.println("ID " + getMyStrVal());
             }
             p.print("(");
-            
             p.print(mySym.getType());
             p.print(")");
         }
@@ -967,7 +977,7 @@ class IdNode extends ExpNode {
 
     public void nameAnalysis(SymTable st) {
         System.out.println("ID nam");
-        MySym sym = st.lookupLocal(myStrVal);
+        MySym sym = st.lookupGlobal(myStrVal);
         if (sym == null){
             ErrMsg.fatal(myLineNum, myCharNum, 
                          "Undeclared identifier");
@@ -992,7 +1002,6 @@ class IdNode extends ExpNode {
     public void link(MySym sym){
         System.out.print(getMyStrVal() + " linked ");
         mySym = sym;
-        System.out.println(mySym.getType());
     }
 
     private int myLineNum;
@@ -1014,7 +1023,13 @@ class DotAccessExpNode extends ExpNode {
     }
 
     public void nameAnalysis(SymTable st) {
+        myLoc.nameAnalysis(st);
+        SymTable field = getStructField(myLoc);
+        myId.nameAnalysis(field);
+    }
 
+    public getStructField(ExpNode loc){
+        
     }
 
     // 2 kids
@@ -1070,7 +1085,9 @@ class CallExpNode extends ExpNode {
     }
 
     public void nameAnalysis(SymTable st) {
-
+        System.out.println("Call name");
+        myId.nameAnalysis(st);
+        myExpList.nameAnalysis(st);
     }
 
     // 2 kids
@@ -1113,6 +1130,7 @@ abstract class BinaryExpNode extends ExpNode {
     public void nameAnalysis(SymTable st) {
         myExp1.nameAnalysis(st);
         myExp2.nameAnalysis(st);
+        System.out.println(binaryOp);
     }
 
 }
@@ -1133,7 +1151,7 @@ class UnaryMinusNode extends UnaryExpNode {
     }
 
     public void nameAnalysis(SymTable st) {
-
+        myExp.nameAnalysis(st);
     }
 }
 
@@ -1149,7 +1167,7 @@ class NotNode extends UnaryExpNode {
     }
 
     public void nameAnalysis(SymTable st) {
-
+        myExp.nameAnalysis(st);
     }
 }
 

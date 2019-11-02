@@ -35,12 +35,20 @@ class MyFuncSym extends MySym{
         retType = type;
     }
 
-    void setRetType(String rt) {
+    public void setRetType(String rt) {
         this.retType = rt;
     }
 
-    void setFormalTypeList(List l) {
+    public String getRetType() {
+        return this.retType;
+    }
+
+    public void setFormalTypeList(List l) {
         this.formalTypeList = l;
+    }
+
+    public String getType() {
+        return this.formalTypeList.toString() + "->" + this.retType;
     }
 
     public String toString() {
