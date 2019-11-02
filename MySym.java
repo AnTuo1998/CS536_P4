@@ -35,6 +35,11 @@ class MyFuncSym extends MySym{
         retType = type;
     }
 
+    public MyFuncSym(String type){
+        super(type, Kind.FUNC);
+        retType = type;
+    }
+
     public void setRetType(String rt) {
         this.retType = rt;
     }
@@ -55,4 +60,23 @@ class MyFuncSym extends MySym{
         return formalTypeList + "->" + retType 
                 + " " + kind;
     }
+}
+
+
+class StructSym extends MySym {
+    public StructSym(String type, Kind kind){
+        super(type, kind);
+        field = new SymTable();
+    }
+
+    public StructSym(String type) {
+        super(type, Kind.STRUCT);
+        field = new SymTable();
+    }
+
+    public SymTable getField(){
+        return field;
+    }
+
+    private SymTable field;
 }

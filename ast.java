@@ -307,6 +307,7 @@ class ExpListNode extends ASTnode {
 abstract class DeclNode extends ASTnode {
 }
 
+
 class VarDeclNode extends DeclNode {
     public VarDeclNode(TypeNode type, IdNode id, int size) {
         myType = type;
@@ -322,14 +323,23 @@ class VarDeclNode extends DeclNode {
         p.println(";");
     }
 
-    public void nameAnalysis(SymTable st){
-        MySym mySym = new MySym(myType.getType(), Kind.VAR);
+    public void nameAnalysis(SymTable st){      
+        MySym mySym;
+
+        if (mySize != NOT_STRUCT){
+            ((StructNode)myType).nameAnalysis(st);
+            mySym = ((StructNode)myType).getSym();
+            System.out.println(myId.getMyStrVal());
+        }
+        else {
+            mySym = new MySym(myType.getType(), Kind.VAR);
+        }
 
         try {
-            System.out.print("add new var ");
             System.out.println(myId.getMyStrVal());
             st.addDecl(myId.getMyStrVal(), mySym);
             myId.link(mySym);
+
         } catch(EmptySymTableException e) {
             ErrMsg.fatal(myId.getLineNum(), 
                          myId.getCharNum(), 
@@ -343,8 +353,6 @@ class VarDeclNode extends DeclNode {
                          myId.getCharNum(), 
                          e.getMessage());
         }
-
-
     }
 
     // 3 kids
@@ -470,7 +478,6 @@ class StructDeclNode extends DeclNode {
     public StructDeclNode(IdNode id, DeclListNode declList) {
         myId = id;
         myDeclList = declList;
-        mySymTable = new SymTable();
     }
 
     public void unparse(PrintWriter p, int indent, boolean isDecl) {
@@ -485,7 +492,7 @@ class StructDeclNode extends DeclNode {
     }
 
     public void nameAnalysis(SymTable st) {
-        MySym mySym = new MySym("struct", Kind.STRUCT);
+        StructSym mySym = new StructSym("struct");
         try {
             System.out.print("add new var ");
             System.out.println(myId.getMyStrVal());
@@ -499,15 +506,15 @@ class StructDeclNode extends DeclNode {
             ErrMsg.fatal(myId.getLineNum(), myId.getCharNum(), e.getMessage());
         }
 
-        myDeclList.nameAnalysis(mySymTable);
+        myDeclList.nameAnalysis(mySym.getField());
         st.print();
-        mySymTable.print();
+        mySym.getField().print();
+        System.out.println("struct name done");
     }
 
     // 2 kids
     private IdNode myId;
     private DeclListNode myDeclList;
-    private SymTable mySymTable;
 }
 
 // **********************************************************************
@@ -580,13 +587,25 @@ class StructNode extends TypeNode {
     }
     
     public void nameAnalysis(SymTable st) {
-
+        StructSym sym = (StructSym)st.lookupGlobal(getType());
+        if (sym == null) {
+            ErrMsg.fatal(myId.getLineNum(), myId.getCharNum(), 
+                         "Invalid name of struct type");
+        } else {
+            System.out.println("struct print " + sym.getType());
+            sym.getField().print();
+            myId.link(sym);
+        }
     }
     
     public String getType() {
         return myId.getMyStrVal();
     }
     
+    public StructSym getSym() {
+        return (StructSym)myId.getSym();
+    }
+
     // 1 kid
     private IdNode myId;
 }
@@ -610,7 +629,6 @@ class AssignStmtNode extends StmtNode {
     }
 
     public void nameAnalysis(SymTable st) {
-        System.out.println("ASS nam");
         myAssign.nameAnalysis(st);
     }
 
@@ -963,10 +981,8 @@ class IdNode extends ExpNode {
 
     public void unparse(PrintWriter p, int indent, boolean isDecl) {
         p.print(myStrVal);
-        System.out.println("ID "+getMyStrVal());
         if (!isDecl) {
             if (mySym == null){
-                System.out.println("ID " + getMyStrVal());
             }
             p.print("(");
             p.print(mySym.getType());
@@ -976,7 +992,6 @@ class IdNode extends ExpNode {
     }
 
     public void nameAnalysis(SymTable st) {
-        System.out.println("ID nam");
         MySym sym = st.lookupGlobal(myStrVal);
         if (sym == null){
             ErrMsg.fatal(myLineNum, myCharNum, 
@@ -995,12 +1010,15 @@ class IdNode extends ExpNode {
         return myLineNum;
     }
 
-    public int getCharNum(){
+    public int getCharNum() {
         return myCharNum;
     }
 
+    public MySym getSym() {
+        return mySym;
+    }
+
     public void link(MySym sym){
-        System.out.print(getMyStrVal() + " linked ");
         mySym = sym;
     }
 
@@ -1025,12 +1043,30 @@ class DotAccessExpNode extends ExpNode {
     public void nameAnalysis(SymTable st) {
         myLoc.nameAnalysis(st);
         SymTable field = getStructField(myLoc);
+        System.out.println("field print");
+        field.print();
         myId.nameAnalysis(field);
     }
 
-    public getStructField(ExpNode loc){
-        
+    SymTable getStructField(ExpNode loc){
+        System.out.println("into Get field");
+        if (loc instanceof DotAccessExpNode){
+            return getStructField(((DotAccessExpNode)loc).myId);
+        }
+        else if (loc instanceof IdNode){
+            IdNode newloc = (IdNode)loc;
+            if (newloc.getSym().getKind() != Kind.STRUCT) {
+                System.out.print(newloc.getMyStrVal() + " " + newloc.getSym().getKind());
+                ErrMsg.fatal(newloc.getLineNum(), newloc.getCharNum(), 
+                             "Dot-access of non-struct type	");
+            }
+            ((StructSym)newloc.getSym()).getField().print();
+            return ((StructSym)newloc.getSym()).getField();
+        }
+        return null;
+
     }
+
 
     // 2 kids
     private ExpNode myLoc;    
@@ -1044,7 +1080,6 @@ class AssignNode extends ExpNode {
     }
     
     public void unparse(PrintWriter p, int indent, boolean isDecl) {
-        System.out.println("ASSIGN");
         if (indent != -1)  p.print("(");
         myLhs.unparse(p, 0, isDecl);
 
@@ -1130,7 +1165,6 @@ abstract class BinaryExpNode extends ExpNode {
     public void nameAnalysis(SymTable st) {
         myExp1.nameAnalysis(st);
         myExp2.nameAnalysis(st);
-        System.out.println(binaryOp);
     }
 
 }

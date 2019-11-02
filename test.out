@@ -12,7 +12,7 @@ int compute() {
     bool y;
     bool z;
     struct Point p;
-    p(Point).x(bool) = 1;
+    p(struct).x(int) = 1;
     a(int) = 1;
     b(int) = (2 + 3);
     b(int) = (-1);
@@ -135,5 +135,18 @@ int main() {
     compare([int, int, int]->void)(a(int), b(int), c(int));
     z(bool) = test_if([int, int]->bool)(a(int), b(int));
     c(int) = test_loop([]->int)();
+}
+
+int f(int x, bool b) {
+}
+
+void g() {
+    int a;
+    bool b;
+    struct Point p;
+    p(struct).x(int) = a(int);
+    b(bool) = (a(int) == 3);
+    f([int, bool]->int)((a(int) + (p(struct).y(int) * 2)), b(bool));
+    g([]->void)();
 }
 
