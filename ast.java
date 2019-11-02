@@ -163,6 +163,7 @@ class DeclListNode extends ASTnode {
     }
 
     public void nameAnalysis(SymTable st) {
+        System.out.println("Decl List nam");
         Iterator it = myDecls.iterator();
         try {
             while (it.hasNext()) {
@@ -223,11 +224,13 @@ class FnBodyNode extends ASTnode {
 
     public void unparse(PrintWriter p, int indent, boolean isDecl) {
         myDeclList.unparse(p, indent, isDecl);
-        myStmtList.unparse(p, indent, isDecl);
+        myStmtList.unparse(p, indent, false);
     }
 
     public void nameAnalysis(SymTable st) {
+        System.out.println("Fnbody nam");
         myDeclList.nameAnalysis(st);
+        st.print();
         myStmtList.nameAnalysis(st);
     }
 
@@ -281,7 +284,15 @@ class ExpListNode extends ASTnode {
     }
     
     public void nameAnalysis(SymTable st) {
-
+        Iterator it = myExps.iterator();
+        try {
+            while (it.hasNext()) {
+                ((ExpNode) it.next()).nameAnalysis(st);
+            }
+        } catch (NoSuchElementException ex) {
+            System.err.println("unexpected NoSuchElementException in DeclListNode.print");
+            System.exit(-1);
+        }
     }
 
     // list of kids (ExpNodes)
@@ -598,7 +609,8 @@ class AssignStmtNode extends StmtNode {
     }
 
     public void nameAnalysis(SymTable st) {
-
+        System.out.println("ASS nam");
+        myAssign.nameAnalysis(st);
     }
 
     // 1 kid
@@ -617,7 +629,8 @@ class PostIncStmtNode extends StmtNode {
     }
 
     public void nameAnalysis(SymTable st) {
-
+        System.out.println("INC nam");
+        myExp.nameAnalysis(st);
     }
 
     // 1 kid
@@ -636,7 +649,7 @@ class PostDecStmtNode extends StmtNode {
     }
 
     public void nameAnalysis(SymTable st) {
-
+        myExp.nameAnalysis(st);
     }
     // 1 kid
     private ExpNode myExp;
@@ -655,7 +668,7 @@ class ReadStmtNode extends StmtNode {
     }
 
     public void nameAnalysis(SymTable st) {
-
+        myExp.nameAnalysis(st);
     }
 
     // 1 kid (actually can only be an IdNode or an ArrayExpNode)
@@ -675,7 +688,7 @@ class WriteStmtNode extends StmtNode {
     }
 
     public void nameAnalysis(SymTable st) {
-
+        myExp.nameAnalysis(st);
     }
 
     // 1 kid
@@ -939,8 +952,13 @@ class IdNode extends ExpNode {
 
     public void unparse(PrintWriter p, int indent, boolean isDecl) {
         p.print(myStrVal);
+        System.out.println("ID "+getMyStrVal());
         if (!isDecl) {
+            if (mySym == null){
+                System.out.println("ID " + getMyStrVal());
+            }
             p.print("(");
+            
             p.print(mySym.getType());
             p.print(")");
         }
@@ -948,7 +966,15 @@ class IdNode extends ExpNode {
     }
 
     public void nameAnalysis(SymTable st) {
-
+        System.out.println("ID nam");
+        MySym sym = st.lookupLocal(myStrVal);
+        if (sym == null){
+            ErrMsg.fatal(myLineNum, myCharNum, 
+                         "Undeclared identifier");
+        }
+        else {
+            this.link(sym);
+        }
     }
 
     public String getMyStrVal() {
@@ -964,7 +990,9 @@ class IdNode extends ExpNode {
     }
 
     public void link(MySym sym){
+        System.out.print(getMyStrVal() + " linked ");
         mySym = sym;
+        System.out.println(mySym.getType());
     }
 
     private int myLineNum;
@@ -1001,15 +1029,18 @@ class AssignNode extends ExpNode {
     }
     
     public void unparse(PrintWriter p, int indent, boolean isDecl) {
+        System.out.println("ASSIGN");
         if (indent != -1)  p.print("(");
         myLhs.unparse(p, 0, isDecl);
+
         p.print(" = ");
         myExp.unparse(p, 0, isDecl);
         if (indent != -1)  p.print(")");
     }
 
     public void nameAnalysis(SymTable st) {
-
+        myLhs.nameAnalysis(st);
+        myExp.nameAnalysis(st);
     }
 
     // 2 kids
@@ -1073,11 +1104,17 @@ abstract class BinaryExpNode extends ExpNode {
     
     public void unparse(PrintWriter p, int indent, boolean isDecl) {
         p.print("(");
-        myExp1.unparse(p, 0, true);
+        myExp1.unparse(p, 0, isDecl);
         p.print(" " + binaryOp + " ");
-        myExp2.unparse(p, 0, true);
+        myExp2.unparse(p, 0, isDecl);
         p.print(")");
     }
+
+    public void nameAnalysis(SymTable st) {
+        myExp1.nameAnalysis(st);
+        myExp2.nameAnalysis(st);
+    }
+
 }
 
 // **********************************************************************
@@ -1125,20 +1162,12 @@ class PlusNode extends BinaryExpNode {
         super(exp1, exp2);
         binaryOp = "+";
     }
-
-    public void nameAnalysis(SymTable st) {
-
-    }
 }
 
 class MinusNode extends BinaryExpNode {
     public MinusNode(ExpNode exp1, ExpNode exp2) {
         super(exp1, exp2);
         binaryOp = "-";
-    }
-
-    public void nameAnalysis(SymTable st) {
-
     }
 }
 
@@ -1147,20 +1176,12 @@ class TimesNode extends BinaryExpNode {
         super(exp1, exp2);
         binaryOp = "*";
     }
-
-    public void nameAnalysis(SymTable st) {
-
-    }
 }
 
 class DivideNode extends BinaryExpNode {
     public DivideNode(ExpNode exp1, ExpNode exp2) {
         super(exp1, exp2);
         binaryOp = "/";
-    }
-
-    public void nameAnalysis(SymTable st) {
-
     }
 }
 
@@ -1169,20 +1190,12 @@ class AndNode extends BinaryExpNode {
         super(exp1, exp2);
         binaryOp = "&&";
     }
-
-    public void nameAnalysis(SymTable st) {
-
-    }
 }
 
 class OrNode extends BinaryExpNode {
     public OrNode(ExpNode exp1, ExpNode exp2) {
         super(exp1, exp2);
         binaryOp = "||";
-    }
-
-    public void nameAnalysis(SymTable st) {
-
     }
 }
 
@@ -1191,20 +1204,12 @@ class EqualsNode extends BinaryExpNode {
         super(exp1, exp2);
         binaryOp = "==";
     }
-
-    public void nameAnalysis(SymTable st) {
-
-    }
 }
 
 class NotEqualsNode extends BinaryExpNode {
     public NotEqualsNode(ExpNode exp1, ExpNode exp2) {
         super(exp1, exp2);
         binaryOp = "!=";
-    }
-
-    public void nameAnalysis(SymTable st) {
-
     }
 }
 
@@ -1213,20 +1218,12 @@ class LessNode extends BinaryExpNode {
         super(exp1, exp2);
         binaryOp = "<";
     }
-
-    public void nameAnalysis(SymTable st) {
-
-    }
 }
 
 class GreaterNode extends BinaryExpNode {
     public GreaterNode(ExpNode exp1, ExpNode exp2) {
         super(exp1, exp2);
         binaryOp = ">";
-    }
-
-    public void nameAnalysis(SymTable st) {
-
     }
 }
 
@@ -1235,19 +1232,11 @@ class LessEqNode extends BinaryExpNode {
         super(exp1, exp2);
         binaryOp = "<=";
     }
-
-    public void nameAnalysis(SymTable st) {
-
-    }
 }
 
 class GreaterEqNode extends BinaryExpNode {
     public GreaterEqNode(ExpNode exp1, ExpNode exp2) {
         super(exp1, exp2);
         binaryOp = ">=";
-    }
-
-    public void nameAnalysis(SymTable st) {
-
     }
 }

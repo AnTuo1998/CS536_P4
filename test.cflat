@@ -1,4 +1,4 @@
-int a;
+int t;
 struct Point {
     int x;
     int y;
@@ -6,8 +6,29 @@ struct Point {
 int f(){
     int a;
     int b;
+    int c;
+    int d;
+    bool x;
+    bool y;
+    bool z;
     struct Point p;
     a = 1;
-    b = a + 1;
-    p.x = 1;
+    b = 2 + 3;
+    b = a;
+    c = a + 1;
+    c = 1 + a;
+    c = a + b;
+    c = a - 1;
+    c = 1 - a;
+    c = a - b;
+    c=a*2;c=5*a;c=a*b;
+    c=a/2;c=5/a;c=a/b;
+    x=true;y=false;
+    z=(true||false)&&(!true);
+    z=x&&true;z=x&&false;z=false&&z;z=x&&y;
+    z=x||true;z=x||false;z=false||z;z=x||y;
+    a++;b--;
+    // p.x = 1;
+    cin>>a;
+    cout<<b;
 }
