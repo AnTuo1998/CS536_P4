@@ -176,6 +176,18 @@ class DeclListNode extends ASTnode {
         }
     }
 
+    public void nameAnalysis(SymTable globalSt, SymTable st) {
+        System.out.println("Decl List nam");
+        Iterator it = myDecls.iterator();
+        try {
+            while (it.hasNext()) {
+                ((VarDeclNode) it.next()).nameAnalysis(globalSt, st);
+            }
+        } catch (NoSuchElementException ex) {
+            System.err.println("unexpected NoSuchElementException in DeclListNode.print");
+            System.exit(-1);
+        }
+    }
     // list of kids (DeclNodes)
     private List<DeclNode> myDecls;
 }
@@ -324,11 +336,19 @@ class VarDeclNode extends DeclNode {
     }
 
     public void nameAnalysis(SymTable st){      
-        MySym mySym;
+        nameAnalysis(st, st);
+    }
 
-        if (mySize != NOT_STRUCT){
-            ((StructNode)myType).nameAnalysis(st);
-            mySym = ((StructNode)myType).getSym();
+    public void nameAnalysis(SymTable globalSt, SymTable st) {
+        System.out.println("DUAL! " + myId.getMyStrVal() + mySize);
+        MySym mySym;
+        if (mySize != NOT_STRUCT) {
+            st.print();
+            ((StructNode) myType).nameAnalysis(globalSt);
+            mySym = new StructSym("struct");
+            ((StructSym)mySym).link(
+                ((StructNode) myType).getSym().getField());
+            ((StructSym) mySym).getField();
             System.out.println(myId.getMyStrVal());
         }
         else {
@@ -339,20 +359,14 @@ class VarDeclNode extends DeclNode {
             System.out.println(myId.getMyStrVal());
             st.addDecl(myId.getMyStrVal(), mySym);
             myId.link(mySym);
-
-        } catch(EmptySymTableException e) {
-            ErrMsg.fatal(myId.getLineNum(), 
-                         myId.getCharNum(), 
-                         "SymTable empty");
-        } catch(DuplicateSymException e) {
-            ErrMsg.fatal(myId.getLineNum(), 
-                         myId.getCharNum(), 
-                         "Multiply declared identifier");
-        } catch(WrongArgumentException e){
-            ErrMsg.fatal(myId.getLineNum(), 
-                         myId.getCharNum(), 
-                         e.getMessage());
+        } catch (EmptySymTableException e) {
+            ErrMsg.fatal(myId.getLineNum(), myId.getCharNum(), "SymTable empty");
+        } catch (DuplicateSymException e) {
+            ErrMsg.fatal(myId.getLineNum(), myId.getCharNum(), "Multiply declared identifier");
+        } catch (WrongArgumentException e) {
+            ErrMsg.fatal(myId.getLineNum(), myId.getCharNum(), e.getMessage());
         }
+
     }
 
     // 3 kids
@@ -492,7 +506,7 @@ class StructDeclNode extends DeclNode {
     }
 
     public void nameAnalysis(SymTable st) {
-        StructSym mySym = new StructSym("struct");
+        StructDefSym mySym = new StructDefSym("struct");
         try {
             System.out.print("add new var ");
             System.out.println(myId.getMyStrVal());
@@ -506,8 +520,9 @@ class StructDeclNode extends DeclNode {
             ErrMsg.fatal(myId.getLineNum(), myId.getCharNum(), e.getMessage());
         }
 
-        myDeclList.nameAnalysis(mySym.getField());
         st.print();
+        mySym.getField().print();
+        myDeclList.nameAnalysis(st, mySym.getField());
         mySym.getField().print();
         System.out.println("struct name done");
     }
@@ -587,7 +602,9 @@ class StructNode extends TypeNode {
     }
     
     public void nameAnalysis(SymTable st) {
-        StructSym sym = (StructSym)st.lookupGlobal(getType());
+        System.out.println("now global find "+getType() + " in");
+        st.print();
+        StructDefSym sym = (StructDefSym)st.lookupGlobal(getType());
         if (sym == null) {
             ErrMsg.fatal(myId.getLineNum(), myId.getCharNum(), 
                          "Invalid name of struct type");
@@ -602,8 +619,8 @@ class StructNode extends TypeNode {
         return myId.getMyStrVal();
     }
     
-    public StructSym getSym() {
-        return (StructSym)myId.getSym();
+    public StructDefSym getSym() {
+        return (StructDefSym)myId.getSym();
     }
 
     // 1 kid
@@ -1019,6 +1036,7 @@ class IdNode extends ExpNode {
     }
 
     public void link(MySym sym){
+        System.out.println(myStrVal + " linked " + sym.toString());
         mySym = sym;
     }
 

@@ -1,5 +1,5 @@
 import java.util.List;
-
+ 
 enum Kind {
     FUNC, VAR, STRUCT, CLASS
 }
@@ -63,6 +63,24 @@ class MyFuncSym extends MySym{
 }
 
 
+class StructDefSym extends MySym {
+    public StructDefSym(String type, Kind kind){
+        super(type, kind);
+        field = new SymTable();
+    }
+
+    public StructDefSym(String type) {
+        super(type, Kind.STRUCT);
+        field = new SymTable();
+    }
+
+    public SymTable getField(){
+        return field;
+    }
+
+    private SymTable field;
+}
+
 class StructSym extends MySym {
     public StructSym(String type, Kind kind){
         super(type, kind);
@@ -73,10 +91,12 @@ class StructSym extends MySym {
         super(type, Kind.STRUCT);
         field = new SymTable();
     }
-
-    public SymTable getField(){
-        return field;
+    public void link(SymTable field) {
+        this.field = field;
     }
 
+    public SymTable getField() {
+        return field;
+    }
     private SymTable field;
 }

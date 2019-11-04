@@ -3,6 +3,17 @@ struct Point {
     int x;
     int y;
 };
+struct Line {
+    struct Point po;
+    int slope;
+};
+int test_struct() {
+    struct Point p;
+    struct Line l;
+    p.x = 1;
+    l.slope = 2;
+    l.po.x = 1;
+}
 int compute(){
     int a;
     int b;
@@ -11,8 +22,6 @@ int compute(){
     bool x;
     bool y;
     bool z;
-    struct Point p;
-    p.x = 1;
     a = 1;
     b = 2 + 3;
     b = -1;

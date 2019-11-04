@@ -3,6 +3,18 @@ struct Point {
     int x;
     int y;
 };
+struct Line {
+    struct Point po;
+    int slope;
+};
+int test_struct() {
+    struct Point p;
+    struct Line l;
+    p(struct).x(int) = 1;
+    l(struct).slope(int) = 2;
+    l(struct).po(struct).x(int) = 1;
+}
+
 int compute() {
     int a;
     int b;
@@ -11,8 +23,6 @@ int compute() {
     bool x;
     bool y;
     bool z;
-    struct Point p;
-    p(struct).x(int) = 1;
     a(int) = 1;
     b(int) = (2 + 3);
     b(int) = (-1);
