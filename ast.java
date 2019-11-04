@@ -341,6 +341,12 @@ class VarDeclNode extends DeclNode {
 
     public void nameAnalysis(SymTable globalSt, SymTable st) {
         System.out.println("DUAL! " + myId.getMyStrVal() + mySize);
+        if (myType.getType().equals("void")) {
+            ErrMsg.fatal(myId.getLineNum(), 
+                         myId.getCharNum(), 
+                         "Non-function declared void");
+        }
+
         MySym mySym;
         if (mySize != NOT_STRUCT) {
             st.print();
@@ -354,17 +360,22 @@ class VarDeclNode extends DeclNode {
         else {
             mySym = new MySym(myType.getType(), Kind.VAR);
         }
-
         try {
             System.out.println(myId.getMyStrVal());
             st.addDecl(myId.getMyStrVal(), mySym);
             myId.link(mySym);
         } catch (EmptySymTableException e) {
-            ErrMsg.fatal(myId.getLineNum(), myId.getCharNum(), "SymTable empty");
+            ErrMsg.fatal(myId.getLineNum(), 
+                         myId.getCharNum(), 
+                         "SymTable empty");
         } catch (DuplicateSymException e) {
-            ErrMsg.fatal(myId.getLineNum(), myId.getCharNum(), "Multiply declared identifier");
+            ErrMsg.fatal(myId.getLineNum(), 
+                         myId.getCharNum(), 
+                         "Multiply declared identifier");
         } catch (WrongArgumentException e) {
-            ErrMsg.fatal(myId.getLineNum(), myId.getCharNum(), e.getMessage());
+            ErrMsg.fatal(myId.getLineNum(), 
+                         myId.getCharNum(), 
+                         e.getMessage());
         }
 
     }
@@ -457,6 +468,11 @@ class FormalDeclNode extends DeclNode {
     }
 
     public void nameAnalysis(SymTable st) {
+        if (myType.getType().equals("void")) {
+            ErrMsg.fatal(myId.getLineNum(), 
+                         myId.getCharNum(), 
+                         "Non-function declared void");
+        }
         MySym mySym = new MySym(myType.getType(), Kind.VAR);
 
         try {
@@ -606,7 +622,8 @@ class StructNode extends TypeNode {
         st.print();
         StructDefSym sym = (StructDefSym)st.lookupGlobal(getType());
         if (sym == null) {
-            ErrMsg.fatal(myId.getLineNum(), myId.getCharNum(), 
+            ErrMsg.fatal(myId.getLineNum(), 
+                         myId.getCharNum(), 
                          "Invalid name of struct type");
         } else {
             System.out.println("struct print " + sym.getType());
@@ -751,8 +768,15 @@ class IfStmtNode extends StmtNode {
 
     public void nameAnalysis(SymTable st) {
         myExp.nameAnalysis(st);
+        st.addScope();
         myDeclList.nameAnalysis(st);
         myStmtList.nameAnalysis(st);
+        try {
+            st.removeScope();
+        } catch(EmptySymTableException e) {
+            System.err.println("unexpected EmptySymTableException");
+            System.exit(-1);
+        }
     }
 
     // e kids
@@ -791,10 +815,24 @@ class IfElseStmtNode extends StmtNode {
 
     public void nameAnalysis(SymTable st) {
         myExp.nameAnalysis(st);
+        st.addScope();
         myThenDeclList.nameAnalysis(st);
         myThenStmtList.nameAnalysis(st);
+        try {
+            st.removeScope();
+        } catch(EmptySymTableException e) {
+            System.err.println("unexpected EmptySymTableException");
+            System.exit(-1);
+        }
+        st.addScope();
         myElseDeclList.nameAnalysis(st);
         myElseStmtList.nameAnalysis(st);
+        try {
+            st.removeScope();
+        } catch(EmptySymTableException e) {
+            System.err.println("unexpected EmptySymTableException");
+            System.exit(-1);
+        }
     }
 
     // 5 kids
@@ -825,8 +863,15 @@ class WhileStmtNode extends StmtNode {
 
     public void nameAnalysis(SymTable st) {
         myExp.nameAnalysis(st);
+        st.addScope();
         myDeclList.nameAnalysis(st);
         myStmtList.nameAnalysis(st);
+        try {
+            st.removeScope();
+        } catch(EmptySymTableException e) {
+            System.err.println("unexpected EmptySymTableException");
+            System.exit(-1);
+        }
     }
 
     // 3 kids
@@ -855,8 +900,15 @@ class RepeatStmtNode extends StmtNode {
 
     public void nameAnalysis(SymTable st) {
         myExp.nameAnalysis(st);
+        st.addScope();
         myDeclList.nameAnalysis(st);
         myStmtList.nameAnalysis(st);
+                try {
+            st.removeScope();
+        } catch(EmptySymTableException e) {
+            System.err.println("unexpected EmptySymTableException");
+            System.exit(-1);
+        }
     }
     // 3 kids
     private ExpNode myExp;
@@ -997,6 +1049,7 @@ class IdNode extends ExpNode {
     }
 
     public void unparse(PrintWriter p, int indent, boolean isDecl) {
+        System.out.println(myStrVal);
         p.print(myStrVal);
         if (!isDecl) {
             if (mySym == null){
@@ -1015,6 +1068,16 @@ class IdNode extends ExpNode {
                          "Undeclared identifier");
         }
         else {
+            this.link(sym);
+        }
+    }
+    
+    public void nameAnalysis(SymTable st, boolean isStruct) {
+        MySym sym = st.lookupGlobal(myStrVal);
+        if (sym == null) {
+            ErrMsg.fatal(myLineNum, myCharNum, 
+                         "Invalid struct field name");
+        } else {
             this.link(sym);
         }
     }
@@ -1061,9 +1124,12 @@ class DotAccessExpNode extends ExpNode {
     public void nameAnalysis(SymTable st) {
         myLoc.nameAnalysis(st);
         SymTable field = getStructField(myLoc);
+        if (field == null) {
+            System.exit(-1);
+        }
         System.out.println("field print");
         field.print();
-        myId.nameAnalysis(field);
+        myId.nameAnalysis(field, true);
     }
 
     SymTable getStructField(ExpNode loc){
@@ -1082,7 +1148,6 @@ class DotAccessExpNode extends ExpNode {
             return ((StructSym)newloc.getSym()).getField();
         }
         return null;
-
     }
 
 

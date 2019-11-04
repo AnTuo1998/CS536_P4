@@ -103,7 +103,6 @@ bool test_if(int d, int e) {
         if ((c(int) >= e(int))) {
             b(int)++;
         }
-        g(int)--;
     }
     return (d(int) <= e(int));
 }

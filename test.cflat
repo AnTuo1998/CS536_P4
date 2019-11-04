@@ -76,7 +76,6 @@ bool test_if(int d, int e) {
         if (c>=e){
             b++;
         }
-        g--;
     }
     return d<=e;
 }
