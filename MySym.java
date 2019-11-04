@@ -53,7 +53,9 @@ class MyFuncSym extends MySym{
     }
 
     public String getType() {
-        return this.formalTypeList.toString() + "->" + this.retType;
+        String fstr = this.formalTypeList.toString();
+        int flen = fstr.length();
+        return fstr.substring(1, flen-1) + "->" + this.retType;
     }
 
     public String toString() {

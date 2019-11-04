@@ -2,17 +2,35 @@ int t;
 struct Point {
     int x;
     int y;
+    int Point;
 };
 struct Line {
     struct Point po;
     int slope;
 };
+int f(int x, bool b) {
+}
+
+void g() {
+    int a;
+    bool b;
+    struct Point p;
+    p(struct).x(int) = a(int);
+    b(bool) = (a(int) == 3);
+    f(int, bool->int)((a(int) + (p(struct).y(int) * 2)), b(bool));
+    g(->void)();
+}
+
+int f(int c) {
+}
+
 int test_struct() {
     struct Point p;
     struct Line l;
     p(struct).x(int) = 1;
     l(struct).slope(int) = 2;
     l(struct).po(struct).x(int) = 1;
+    l(struct).po(struct).Point(int) = 1;
 }
 
 int compute() {
@@ -139,23 +157,12 @@ int main() {
     int a;
     int b;
     int c;
-    bool z;
-    a(int) = compute([]->int)(a(int), b(int), c(int));
-    compare([int, int, int]->void)(a(int), b(int), c(int));
-    z(bool) = test_if([int, int]->bool)(a(int), b(int));
-    c(int) = test_loop([]->int)();
-}
-
-int f(int x, bool b) {
-}
-
-void g() {
-    int a;
-    bool b;
     struct Point p;
+    bool z;
+    a(int) = compute(->int)(a(int), b(int), c(int));
+    compare(int, int, int->void)(a(int), b(int), c(int));
     p(struct).x(int) = a(int);
-    b(bool) = (a(int) == 3);
-    f([int, bool]->int)((a(int) + (p(struct).y(int) * 2)), b(bool));
-    g([]->void)();
+    z(bool) = test_if(int, int->bool)(p(struct).x(int), b(int));
+    c(int) = test_loop(->int)();
 }
 

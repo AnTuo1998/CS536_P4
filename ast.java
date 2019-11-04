@@ -345,6 +345,7 @@ class VarDeclNode extends DeclNode {
             ErrMsg.fatal(myId.getLineNum(), 
                          myId.getCharNum(), 
                          "Non-function declared void");
+            return;
         }
 
         MySym mySym;
@@ -352,10 +353,6 @@ class VarDeclNode extends DeclNode {
             st.print();
             ((StructNode) myType).nameAnalysis(globalSt);
             mySym = new StructSym("struct");
-            ((StructSym)mySym).link(
-                ((StructNode) myType).getSym().getField());
-            ((StructSym) mySym).getField();
-            System.out.println(myId.getMyStrVal());
         }
         else {
             mySym = new MySym(myType.getType(), Kind.VAR);
@@ -363,21 +360,29 @@ class VarDeclNode extends DeclNode {
         try {
             System.out.println(myId.getMyStrVal());
             st.addDecl(myId.getMyStrVal(), mySym);
-            myId.link(mySym);
         } catch (EmptySymTableException e) {
             ErrMsg.fatal(myId.getLineNum(), 
                          myId.getCharNum(), 
                          "SymTable empty");
+            return;
         } catch (DuplicateSymException e) {
             ErrMsg.fatal(myId.getLineNum(), 
                          myId.getCharNum(), 
                          "Multiply declared identifier");
+            return;
         } catch (WrongArgumentException e) {
             ErrMsg.fatal(myId.getLineNum(), 
                          myId.getCharNum(), 
                          e.getMessage());
+            return;
         }
-
+        if (mySize != NOT_STRUCT) {
+            ((StructSym) mySym).link(((StructNode) myType).getSym().getField());
+            ((StructSym) mySym).getField();
+            System.out.println(myId.getMyStrVal());
+        } else {
+            myId.link(mySym);
+        }
     }
 
     // 3 kids
@@ -423,14 +428,13 @@ class FnDeclNode extends DeclNode {
             ErrMsg.fatal(myId.getLineNum(), 
                          myId.getCharNum(), 
                          "SymTable empty");
+            return;
         } catch(DuplicateSymException e) {
-            ErrMsg.fatal(myId.getLineNum(), 
-                         myId.getCharNum(), 
-                         "Multiply declared identifier");
         } catch(WrongArgumentException e){
             ErrMsg.fatal(myId.getLineNum(), 
                          myId.getCharNum(), 
                          e.getMessage());
+            return;
         }
 
         st.addScope();
@@ -444,6 +448,7 @@ class FnDeclNode extends DeclNode {
             ErrMsg.fatal(myId.getLineNum(), 
                          myId.getCharNum(), 
                          "SymTable empty");
+            return;
         }
         st.print();
     }
@@ -472,6 +477,7 @@ class FormalDeclNode extends DeclNode {
             ErrMsg.fatal(myId.getLineNum(), 
                          myId.getCharNum(), 
                          "Non-function declared void");
+            return;
         }
         MySym mySym = new MySym(myType.getType(), Kind.VAR);
 
@@ -484,6 +490,7 @@ class FormalDeclNode extends DeclNode {
             ErrMsg.fatal(myId.getLineNum(), 
                          myId.getCharNum(), 
                          "SymTable empty");
+            return;
         } catch(DuplicateSymException e) {
             ErrMsg.fatal(myId.getLineNum(), 
                          myId.getCharNum(), 
@@ -492,6 +499,7 @@ class FormalDeclNode extends DeclNode {
             ErrMsg.fatal(myId.getLineNum(), 
                          myId.getCharNum(), 
                          e.getMessage());
+            return;
         }
     }
 
@@ -529,11 +537,20 @@ class StructDeclNode extends DeclNode {
             st.addDecl(myId.getMyStrVal(), mySym);
             myId.link(mySym);
         } catch (EmptySymTableException e) {
-            ErrMsg.fatal(myId.getLineNum(), myId.getCharNum(), "SymTable empty");
+            ErrMsg.fatal(myId.getLineNum(), 
+                         myId.getCharNum(), 
+                         "SymTable empty");
+            return;
         } catch (DuplicateSymException e) {
-            ErrMsg.fatal(myId.getLineNum(), myId.getCharNum(), "Multiply declared identifier");
+            ErrMsg.fatal(myId.getLineNum(), 
+                         myId.getCharNum(), 
+                         "Multiply declared identifier");
+            return;
         } catch (WrongArgumentException e) {
-            ErrMsg.fatal(myId.getLineNum(), myId.getCharNum(), e.getMessage());
+            ErrMsg.fatal(myId.getLineNum(), 
+                         myId.getCharNum(), 
+                         e.getMessage());
+            return;
         }
 
         st.print();
@@ -625,6 +642,7 @@ class StructNode extends TypeNode {
             ErrMsg.fatal(myId.getLineNum(), 
                          myId.getCharNum(), 
                          "Invalid name of struct type");
+            return;
         } else {
             System.out.println("struct print " + sym.getType());
             sym.getField().print();
@@ -1143,6 +1161,7 @@ class DotAccessExpNode extends ExpNode {
                 System.out.print(newloc.getMyStrVal() + " " + newloc.getSym().getKind());
                 ErrMsg.fatal(newloc.getLineNum(), newloc.getCharNum(), 
                              "Dot-access of non-struct type	");
+                return null;
             }
             ((StructSym)newloc.getSym()).getField().print();
             return ((StructSym)newloc.getSym()).getField();
