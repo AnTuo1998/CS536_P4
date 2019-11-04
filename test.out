@@ -21,9 +21,6 @@ void g() {
     g(->void)();
 }
 
-int f(int c) {
-}
-
 int test_struct() {
     struct Point p;
     struct Line l;

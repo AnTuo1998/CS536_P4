@@ -18,9 +18,6 @@ void g() {
     f(a + p.y*2, b);
     g();
 }
-int f(int c) {
-
-}
 int test_struct() {
     struct Point p;
     struct Line l;

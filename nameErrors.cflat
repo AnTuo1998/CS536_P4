@@ -1,15 +1,48 @@
 int a;
 int b;
-bool c;
+int c;
+bool a; // Multiply declared identifier
+void d; // Non-function declared void
+void a; // Non-function declared void
+
 struct Point {
     int x;
     int y;
+    void k; // Non-function declared void
+    void h; // Non-function declared void
+    int Point;
 };
-int f(){
+
+struct Line {
+    struct Point a;
+    int Point;
+};
+struct Point p;
+struct Line l;
+
+void a(int x, bool x) { // Multiply declared identifier
     int a;
-    int b;
     struct Point p;
-    a = 1;
-    b = a + 1;
-    p.x = 1;
+    p.h = 1; // Invalid struct field name
+    x.h = 1; // Dot-access of non-struct type
+    t.h = 1; // Undeclared identifier & 
+             // Dot-access of non-struct type
+    a = z; // Undeclared identifier
+    a = b;
+    p.Point = 1;
+}
+void func(){
+}
+int func(int y, bool z){ // WARN: Multiply declared identifier
+    struct Point p;
+    l.Point = 1;
+    l.a.Point = 1;
+    l.a.Point++;
+}
+
+bool f2(){
+    struct Point a;
+    struct Plane pl; // Invalid name of struct type
+    int a; // Multiply declared identifier
+    struct Line a; // Multiply declared identifier
 }
